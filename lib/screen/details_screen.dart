@@ -4,14 +4,35 @@ import 'package:flutter_mastery/db/database_helper.dart';
 import 'package:flutter_mastery/models/product.model.dart';
 import 'package:flutter_mastery/screen/cart_screen.dart';
 
-class DetailsScreen extends StatelessWidget {
+class DetailsScreen extends StatefulWidget {
   final Product product;
 
   const DetailsScreen({super.key, required this.product});
 
   @override
+  State<DetailsScreen> createState() => _DetailsScreenState();
+}
+
+class _DetailsScreenState extends State<DetailsScreen> {
+  int _quantity = 1;
+
+  void _increaseQuantity() {
+    setState(() {
+      _quantity++;
+    });
+  }
+
+  void _decreaseQuantity() {
+    if (_quantity > 1) {
+      setState(() {
+        _quantity--;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final primaryColor = const Color(0xFFFF8C42); // Pet Orange
+    final primaryColor = const Color(0xFFFF8C42);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -54,11 +75,11 @@ class DetailsScreen extends StatelessWidget {
                 ),
               ),
               child: Hero(
-                tag: 'product-${product.id}',
+                tag: 'product-${widget.product.id}',
                 child: Padding(
                   padding: const EdgeInsets.all(40.0),
                   child: CachedNetworkImage(
-                    imageUrl: product.image,
+                    imageUrl: widget.product.image,
                     placeholder: (context, url) =>
                         const Center(child: CircularProgressIndicator()),
                     errorWidget: (context, url, error) =>
@@ -86,7 +107,7 @@ class DetailsScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          product.category?.toUpperCase() ?? "PET FOOD",
+                          widget.product.category.toUpperCase(),
                           style: TextStyle(
                             color: primaryColor,
                             fontWeight: FontWeight.bold,
@@ -106,18 +127,16 @@ class DetailsScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 15),
-
                   Text(
-                    product.title,
+                    widget.product.title,
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 10),
-
                   Text(
-                    '\$${product.price}',
+                    '\$${widget.product.price}',
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w900,
@@ -125,7 +144,6 @@ class DetailsScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 20),
-
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
@@ -141,7 +159,7 @@ class DetailsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    product.description,
+                    widget.product.description,
                     style: TextStyle(
                       fontSize: 15,
                       color: Colors.grey[700],
@@ -155,7 +173,6 @@ class DetailsScreen extends StatelessWidget {
           ],
         ),
       ),
-
       bottomSheet: Container(
         height: 90,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
@@ -165,7 +182,7 @@ class DetailsScreen extends StatelessWidget {
             BoxShadow(
               color: Colors.black12,
               blurRadius: 10,
-              offset: Offset(0, -5),
+              offset: const Offset(0, -5),
             ),
           ],
         ),
@@ -178,12 +195,21 @@ class DetailsScreen extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  IconButton(onPressed: () {}, icon: const Icon(Icons.remove)),
-                  const Text(
-                    "1",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  IconButton(
+                    onPressed: _decreaseQuantity,
+                    icon: const Icon(Icons.remove),
                   ),
-                  IconButton(onPressed: () {}, icon: const Icon(Icons.add)),
+                  Text(
+                    "$_quantity",
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: _increaseQuantity,
+                    icon: const Icon(Icons.add),
+                  ),
                 ],
               ),
             ),
@@ -191,23 +217,30 @@ class DetailsScreen extends StatelessWidget {
             Expanded(
               child: ElevatedButton(
                 onPressed: () async {
-                  await DatabaseHelper.instance.addToCart(product);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text("${product.title} added to cart!"),
-                      backgroundColor: Colors.green,
-                      duration: const Duration(seconds: 1),
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                  for (int i = 0; i < _quantity; i++) {
+                    await DatabaseHelper.instance.addToCart(widget.product);
+                  }
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          "${widget.product.title} (x$_quantity) added to cart!",
+                        ),
+                        backgroundColor: Colors.green,
+                        duration: const Duration(seconds: 1),
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
-                    ),
-                  );
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => CartScreen()),
-                  );
-                  // PaymentService.makePayment("2000");
+                    );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CartScreen(),
+                      ),
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,

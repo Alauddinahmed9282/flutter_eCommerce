@@ -51,26 +51,123 @@ class _CartScreenState extends State<CartScreen> {
                     itemCount: _cartItems.length,
                     itemBuilder: (context, index) {
                       final item = _cartItems[index];
-                      return ListTile(
-                        leading: Image.network(item['image'], width: 50),
-                        title: Text(item['title'], maxLines: 1),
-                        subtitle: Text(
-                          "\$${item['price']} x ${item['quantity']}",
+                      return Card(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
                         ),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () async {
-                            await DatabaseHelper.instance.removeFromCart(
-                              item['id'],
-                            );
-                            _loadCart();
-                          },
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Row(
+                            children: [
+                              // Product Image
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  item['image'],
+                                  width: 80,
+                                  height: 80,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              // Product Info
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item['title'],
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      "\$${item['price']}",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: primaryColor,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    // Quantity Controls
+                                    Row(
+                                      children: [
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons.remove_circle_outline,
+                                            color: primaryColor,
+                                            size: 20,
+                                          ),
+                                          onPressed: () async {
+                                            int newQty = item['quantity'] - 1;
+                                            if (newQty <= 0) {
+                                              await DatabaseHelper.instance
+                                                  .removeFromCart(item['id']);
+                                            } else {
+                                              await DatabaseHelper.instance
+                                                  .updateCartQuantity(
+                                                item['id'],
+                                                newQty,
+                                              );
+                                            }
+                                            _loadCart();
+                                          },
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
+                                        ),
+                                        Text(
+                                          "${item['quantity']}",
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons.add_circle_outline,
+                                            color: primaryColor,
+                                            size: 20,
+                                          ),
+                                          onPressed: () async {
+                                            int newQty = item['quantity'] + 1;
+                                            await DatabaseHelper.instance
+                                                .updateCartQuantity(
+                                              item['id'],
+                                              newQty,
+                                            );
+                                            _loadCart();
+                                          },
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              // Delete Button
+                              IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () async {
+                                  await DatabaseHelper.instance.removeFromCart(
+                                    item['id'],
+                                  );
+                                  _loadCart();
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     },
                   ),
                 ),
-
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
@@ -105,10 +202,12 @@ class _CartScreenState extends State<CartScreen> {
                       ElevatedButton(
                         onPressed: () async {
                           try {
-                            String amount = (_totalPrice * 100)
-                                .toInt()
-                                .toString();
+                            String amount = (_totalPrice * 100).toInt().toString();
+                            
+                            // Make payment first
                             await PaymentService.makePayment(amount);
+                            
+                            // Only clear cart if payment was successful
                             await DatabaseHelper.instance.clearCart();
 
                             if (context.mounted) {
@@ -163,11 +262,14 @@ class _CartScreenState extends State<CartScreen> {
                               );
                             }
                           } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text("Payment failed or cancelled"),
-                              ),
-                            );
+                            // Payment was cancelled or failed - do NOT clear cart
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Payment failed or cancelled"),
+                                ),
+                              );
+                            }
                           }
                         },
                         style: ElevatedButton.styleFrom(

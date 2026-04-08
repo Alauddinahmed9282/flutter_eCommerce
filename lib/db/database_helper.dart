@@ -100,6 +100,20 @@ class DatabaseHelper {
     await db.delete('cart', where: 'id = ?', whereArgs: [id]);
   }
 
+  Future<void> updateCartQuantity(int id, int quantity) async {
+    final db = await instance.database;
+    if (quantity <= 0) {
+      await removeFromCart(id);
+    } else {
+      await db.update(
+        'cart',
+        {'quantity': quantity},
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    }
+  }
+
   Future<void> clearCart() async {
     final db = await instance.database;
     await db.delete('cart');

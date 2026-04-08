@@ -29,6 +29,7 @@ class PaymentService {
       print("Payment Successful!");
     } catch (e) {
       print("Error: $e");
+      rethrow;
     }
   }
 }
