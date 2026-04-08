@@ -41,7 +41,11 @@ class _MainWrapperState extends State<MainWrapper> {
             ? primaryColor
             : const Color(0xFF2D3436),
         elevation: 4,
-        child: const Icon(Icons.pets, color: Colors.white, size: 28),
+        child: const Icon(
+          Icons.storefront_outlined,
+          color: Colors.white,
+          size: 28,
+        ),
       ),
 
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -66,6 +70,7 @@ class _MainWrapperState extends State<MainWrapper> {
               ),
               onPressed: () => _onItemTapped(0),
             ),
+
             IconButton(
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
@@ -76,7 +81,6 @@ class _MainWrapperState extends State<MainWrapper> {
               ),
               onPressed: () => _onItemTapped(1),
             ),
-
             const SizedBox(width: 45),
             IconButton(
               padding: EdgeInsets.zero,
