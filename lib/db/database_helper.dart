@@ -1,6 +1,6 @@
-import 'package:flutter_mastery/models/product.model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:flutter_mastery/models/product.model.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -32,6 +32,16 @@ class DatabaseHelper {
         image TEXT
       )
     ''');
+
+    await db.execute('''
+      CREATE TABLE cart(
+        id INTEGER PRIMARY KEY,
+        title TEXT,
+        price REAL,
+        image TEXT,
+        quantity INTEGER
+      )
+    ''');
   }
 
   Future<void> insertProducts(List<Product> products) async {
@@ -50,5 +60,48 @@ class DatabaseHelper {
     final db = await instance.database;
     final result = await db.query('products');
     return result.map((json) => Product.fromMap(json)).toList();
+  }
+
+  Future<void> addToCart(Product product) async {
+    final db = await instance.database;
+
+    final List<Map<String, dynamic>> existing = await db.query(
+      'cart',
+      where: 'id = ?',
+      whereArgs: [product.id],
+    );
+
+    if (existing.isNotEmpty) {
+      int newQty = (existing.first['quantity'] as int) + 1;
+      await db.update(
+        'cart',
+        {'quantity': newQty},
+        where: 'id = ?',
+        whereArgs: [product.id],
+      );
+    } else {
+      await db.insert('cart', {
+        'id': product.id,
+        'title': product.title,
+        'price': product.price,
+        'image': product.image,
+        'quantity': 1,
+      });
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getCartItems() async {
+    final db = await instance.database;
+    return await db.query('cart');
+  }
+
+  Future<void> removeFromCart(int id) async {
+    final db = await instance.database;
+    await db.delete('cart', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> clearCart() async {
+    final db = await instance.database;
+    await db.delete('cart');
   }
 }

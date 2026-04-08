@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_mastery/db/database_helper.dart';
 import 'package:flutter_mastery/models/product.model.dart';
+import 'package:flutter_mastery/screen/cart_screen.dart';
 
 class DetailsScreen extends StatelessWidget {
   final Product product;
@@ -188,8 +190,24 @@ class DetailsScreen extends StatelessWidget {
             const SizedBox(width: 15),
             Expanded(
               child: ElevatedButton(
-                onPressed: () {
-                  debugPrint("Added to cart button pressed");
+                onPressed: () async {
+                  await DatabaseHelper.instance.addToCart(product);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("${product.title} added to cart!"),
+                      backgroundColor: Colors.green,
+                      duration: const Duration(seconds: 1),
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  );
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => CartScreen()),
+                  );
+                  // PaymentService.makePayment("2000");
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,

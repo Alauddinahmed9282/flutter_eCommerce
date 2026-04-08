@@ -18,13 +18,11 @@ class ApiService {
 
         await DatabaseHelper.instance.insertProducts(products);
 
-        // ২. লোকাল ডাটাবেস থেকে ডাটা রিটার্ন করা
         return await DatabaseHelper.instance.getLocalProducts();
       } else {
         throw "Server Error";
       }
     } catch (e) {
-      // যদি ইন্টারনেট না থাকে, তবে লোকাল স্টোরেজ থেকে ডাটা দেখাবে
       return await DatabaseHelper.instance.getLocalProducts();
     }
   }
