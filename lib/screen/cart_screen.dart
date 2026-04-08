@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mastery/services/payment_service.dart';
 import '../db/database_helper.dart';
@@ -12,6 +13,7 @@ class CartScreen extends StatefulWidget {
 class _CartScreenState extends State<CartScreen> {
   List<Map<String, dynamic>> _cartItems = [];
   double _totalPrice = 0;
+  bool _isProcessing = false; // পেমেন্ট প্রসেসিং ট্র্যাকার
 
   @override
   void initState() {
@@ -25,10 +27,12 @@ class _CartScreenState extends State<CartScreen> {
     for (var item in data) {
       total += (item['price'] * item['quantity']);
     }
-    setState(() {
-      _cartItems = data;
-      _totalPrice = total;
-    });
+    if (mounted) {
+      setState(() {
+        _cartItems = data;
+        _totalPrice = total;
+      });
+    }
   }
 
   @override
@@ -37,7 +41,10 @@ class _CartScreenState extends State<CartScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("My Cart", style: TextStyle(color: Colors.black)),
+        title: const Text(
+          "My Cart",
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
@@ -56,22 +63,33 @@ class _CartScreenState extends State<CartScreen> {
                           horizontal: 12,
                           vertical: 8,
                         ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.all(12.0),
                           child: Row(
+                            crossAxisAlignment:
+                                CrossAxisAlignment.start, // Top align
                             children: [
-                              // Product Image
+                              // Product Image with Error Handling
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(8),
-                                child: Image.network(
-                                  item['image'],
+                                child: CachedNetworkImage(
+                                  imageUrl: item['image'],
                                   width: 80,
                                   height: 80,
-                                  fit: BoxFit.cover,
+                                  fit: BoxFit.contain,
+                                  placeholder: (context, url) =>
+                                      const CircularProgressIndicator(), // লোড হওয়ার সময় দেখাবে
+                                  errorWidget: (context, url, error) =>
+                                      const Icon(
+                                        Icons.broken_image,
+                                      ), // অফলাইনেও যদি ক্যাশে না থাকে তবে দেখাবে
                                 ),
                               ),
                               const SizedBox(width: 12),
-                              // Product Info
+                              // Info Section - Wrapped in Expanded to prevent Overflow
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -89,62 +107,52 @@ class _CartScreenState extends State<CartScreen> {
                                     Text(
                                       "\$${item['price']}",
                                       style: TextStyle(
-                                        fontSize: 14,
                                         color: primaryColor,
-                                        fontWeight: FontWeight.w600,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                     const SizedBox(height: 8),
-                                    // Quantity Controls
+                                    // Quantity Selector
                                     Row(
                                       children: [
-                                        IconButton(
-                                          icon: Icon(
-                                            Icons.remove_circle_outline,
-                                            color: primaryColor,
-                                            size: 20,
-                                          ),
-                                          onPressed: () async {
-                                            int newQty = item['quantity'] - 1;
-                                            if (newQty <= 0) {
-                                              await DatabaseHelper.instance
-                                                  .removeFromCart(item['id']);
-                                            } else {
+                                        _buildQtyBtn(
+                                          Icons.remove_circle_outline,
+                                          () async {
+                                            if (item['quantity'] > 1) {
                                               await DatabaseHelper.instance
                                                   .updateCartQuantity(
-                                                item['id'],
-                                                newQty,
-                                              );
+                                                    item['id'],
+                                                    item['quantity'] - 1,
+                                                  );
+                                            } else {
+                                              await DatabaseHelper.instance
+                                                  .removeFromCart(item['id']);
                                             }
                                             _loadCart();
                                           },
-                                          padding: EdgeInsets.zero,
-                                          constraints: const BoxConstraints(),
                                         ),
-                                        Text(
-                                          "${item['quantity']}",
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                          ),
+                                          child: Text(
+                                            "${item['quantity']}",
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                         ),
-                                        IconButton(
-                                          icon: Icon(
-                                            Icons.add_circle_outline,
-                                            color: primaryColor,
-                                            size: 20,
-                                          ),
-                                          onPressed: () async {
-                                            int newQty = item['quantity'] + 1;
+                                        _buildQtyBtn(
+                                          Icons.add_circle_outline,
+                                          () async {
                                             await DatabaseHelper.instance
                                                 .updateCartQuantity(
-                                              item['id'],
-                                              newQty,
-                                            );
+                                                  item['id'],
+                                                  item['quantity'] + 1,
+                                                );
                                             _loadCart();
                                           },
-                                          padding: EdgeInsets.zero,
-                                          constraints: const BoxConstraints(),
                                         ),
                                       ],
                                     ),
@@ -153,7 +161,10 @@ class _CartScreenState extends State<CartScreen> {
                               ),
                               // Delete Button
                               IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.red),
+                                icon: const Icon(
+                                  Icons.delete_sweep_outlined,
+                                  color: Colors.redAccent,
+                                ),
                                 onPressed: () async {
                                   await DatabaseHelper.instance.removeFromCart(
                                     item['id'],
@@ -168,127 +179,150 @@ class _CartScreenState extends State<CartScreen> {
                     },
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(color: Colors.black12, blurRadius: 10),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            "Total:",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            "\$${_totalPrice.toStringAsFixed(2)}",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: primaryColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 15),
-                      ElevatedButton(
-                        onPressed: () async {
-                          try {
-                            String amount = (_totalPrice * 100).toInt().toString();
-                            
-                            // Make payment first
-                            await PaymentService.makePayment(amount);
-                            
-                            // Only clear cart if payment was successful
-                            await DatabaseHelper.instance.clearCart();
+                // Checkout Section
+                _buildCheckoutSection(primaryColor),
+              ],
+            ),
+    );
+  }
 
-                            if (context.mounted) {
-                              showDialog(
-                                context: context,
-                                barrierDismissible: false,
-                                builder: (context) => AlertDialog(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  title: const Icon(
-                                    Icons.check_circle,
-                                    color: Colors.green,
-                                    size: 60,
-                                  ),
-                                  content: const Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        "Payment Successful!",
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      SizedBox(height: 10),
-                                      Text(
-                                        "Your order has been placed successfully. Thank you for shopping with us!",
-                                      ),
-                                    ],
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                        Navigator.of(
-                                          context,
-                                        ).pushNamedAndRemoveUntil(
-                                          '/',
-                                          (route) => false,
-                                        );
-                                      },
-                                      child: const Text(
-                                        "Go to Home",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }
-                          } catch (e) {
-                            // Payment was cancelled or failed - do NOT clear cart
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text("Payment failed or cancelled"),
-                                ),
-                              );
-                            }
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: primaryColor,
-                          minimumSize: const Size(double.infinity, 50),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: const Text(
-                          "Checkout Now",
-                          style: TextStyle(fontSize: 16, color: Colors.white),
-                        ),
-                      ),
-                    ],
+  // Reusable Quantity Button to keep UI clean
+  Widget _buildQtyBtn(IconData icon, VoidCallback onPressed) {
+    return InkWell(
+      onTap: onPressed,
+      child: Icon(icon, color: const Color(0xFFFF8C42), size: 24),
+    );
+  }
+
+  Widget _buildCheckoutSection(Color primaryColor) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "Total Payable:",
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                ),
+                Text(
+                  "\$${_totalPrice.toStringAsFixed(2)}",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: primaryColor,
                   ),
                 ),
               ],
             ),
+            const SizedBox(height: 15),
+            ElevatedButton(
+              onPressed: _isProcessing ? null : _handleCheckout,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryColor,
+                minimumSize: const Size(double.infinity, 54),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
+              ),
+              child: _isProcessing
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Text(
+                      "Checkout Now",
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleCheckout() async {
+    setState(() => _isProcessing = true);
+    try {
+      String amount = (_totalPrice * 100).toInt().toString();
+      await PaymentService.makePayment(amount);
+
+      // Payment success logic
+      await DatabaseHelper.instance.clearCart();
+      if (mounted) _showSuccessDialog();
+    } catch (e) {
+      // শুধু পেমেন্ট ফেইল করলে মেসেজ দেখাবে, ক্যানসেল করলে শান্ত থাকবে
+      debugPrint("Payment Error: $e");
+      if (mounted && !e.toString().contains('Canceled')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Payment unsuccessful. Please try again."),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isProcessing = false);
+    }
+  }
+
+  void _showSuccessDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.check_circle, color: Colors.green, size: 80),
+            const SizedBox(height: 16),
+            const Text(
+              "Order Placed!",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              "Your payment was successful.",
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.of(
+                  context,
+                ).pushNamedAndRemoveUntil('/', (route) => false),
+                child: const Text("Back to Home"),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
