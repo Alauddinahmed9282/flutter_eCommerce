@@ -6,7 +6,7 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // Sign Up Function
-  Future<User?> signUp(String name, String email, String password) async {
+  Future<Object?> signUp(String name, String email, String password) async {
     try {
       UserCredential result = await _auth.createUserWithEmailAndPassword(
         email: email,
@@ -21,14 +21,15 @@ class AuthService {
         await prefs.setBool('isLoggedIn', true);
       }
       return user;
+    } on FirebaseAuthException catch (e) {
+      return e.message ?? "An unknown error occurred.";
     } catch (e) {
-      print("Signup Error: $e");
-      return null;
+      return "Something went wrong. Please try again.";
     }
   }
 
   // Login Function
-  Future<User?> login(String email, String password) async {
+  Future<Object?> login(String email, String password) async {
     try {
       UserCredential result = await _auth.signInWithEmailAndPassword(
         email: email,
@@ -39,9 +40,10 @@ class AuthService {
       await prefs.setBool('isLoggedIn', true);
 
       return result.user;
+    } on FirebaseAuthException catch (e) {
+      return e.message ?? "An unknown error occurred.";
     } catch (e) {
-      print("Login Error: $e");
-      return null;
+      return "Something went wrong. Please try again.";
     }
   }
 

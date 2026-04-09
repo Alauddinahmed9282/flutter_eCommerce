@@ -15,6 +15,29 @@ class _SignupScreenState extends State<SignupScreen> {
   bool _isLoading = false;
   final _authService = AuthService();
 
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: const Row(
+          children: [
+            Icon(Icons.report_problem_outlined, color: Colors.orange),
+            SizedBox(width: 10),
+            Text("Signup Issue"),
+          ],
+        ),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text("Got it"),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final primaryColor = const Color(0xFFFF8C42);
@@ -44,6 +67,7 @@ class _SignupScreenState extends State<SignupScreen> {
             const SizedBox(height: 16),
             TextField(
               controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
               decoration: InputDecoration(
                 labelText: "Email",
                 border: OutlineInputBorder(
@@ -56,7 +80,7 @@ class _SignupScreenState extends State<SignupScreen> {
               controller: _passwordController,
               obscureText: true,
               decoration: InputDecoration(
-                labelText: "Password",
+                labelText: "Password (min 6 chars)",
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -74,19 +98,34 @@ class _SignupScreenState extends State<SignupScreen> {
                       ),
                     ),
                     onPressed: () async {
-                      setState(() => _isLoading = true);
-                      var user = await _authService.signUp(
-                        _nameController.text.trim(),
-                        _emailController.text.trim(),
-                        _passwordController.text.trim(),
-                      );
-                      setState(() => _isLoading = false);
-                      if (user != null) {
-                        Navigator.pushReplacementNamed(context, '/home');
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Signup Failed!")),
+                      if (_nameController.text.isEmpty ||
+                          _emailController.text.isEmpty ||
+                          _passwordController.text.length < 6) {
+                        _showErrorDialog(
+                          "Please enter a valid name, email, and password (at least 6 characters).",
                         );
+                        return;
+                      }
+
+                      setState(() => _isLoading = true);
+                      try {
+                        var user = await _authService.signUp(
+                          _nameController.text.trim(),
+                          _emailController.text.trim(),
+                          _passwordController.text.trim(),
+                        );
+
+                        if (user != null) {
+                          Navigator.pushReplacementNamed(context, '/');
+                        } else {
+                          _showErrorDialog(
+                            "This email is already in use or the server is busy.",
+                          );
+                        }
+                      } catch (e) {
+                        _showErrorDialog(e.toString());
+                      } finally {
+                        if (mounted) setState(() => _isLoading = false);
                       }
                     },
                     child: const Text(

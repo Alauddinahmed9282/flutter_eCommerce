@@ -14,6 +14,30 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
   final _authService = AuthService();
 
+  // এরর মোডাল দেখানোর ফাংশন
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: const Row(
+          children: [
+            Icon(Icons.error_outline, color: Colors.red),
+            SizedBox(width: 10),
+            Text("Login Error"),
+          ],
+        ),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text("OK"),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final primaryColor = const Color(0xFFFF8C42);
@@ -33,6 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 40),
             TextField(
               controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
               decoration: InputDecoration(
                 labelText: "Email",
                 border: OutlineInputBorder(
@@ -63,18 +88,30 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     onPressed: () async {
+                      if (_emailController.text.isEmpty ||
+                          _passwordController.text.isEmpty) {
+                        _showErrorDialog("Please fill in all fields");
+                        return;
+                      }
+
                       setState(() => _isLoading = true);
-                      var user = await _authService.login(
-                        _emailController.text.trim(),
-                        _passwordController.text.trim(),
-                      );
-                      setState(() => _isLoading = false);
-                      if (user != null) {
-                        Navigator.pushReplacementNamed(context, '/home');
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Invalid Credentials!")),
+                      try {
+                        var user = await _authService.login(
+                          _emailController.text.trim(),
+                          _passwordController.text.trim(),
                         );
+
+                        if (user != null) {
+                          Navigator.pushReplacementNamed(context, '/');
+                        } else {
+                          _showErrorDialog(
+                            "Invalid email or password. Please try again.",
+                          );
+                        }
+                      } catch (e) {
+                        _showErrorDialog(e.toString());
+                      } finally {
+                        if (mounted) setState(() => _isLoading = false);
                       }
                     },
                     child: const Text(
