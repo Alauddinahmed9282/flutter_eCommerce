@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 
@@ -102,30 +103,25 @@ class _SignupScreenState extends State<SignupScreen> {
                           _emailController.text.isEmpty ||
                           _passwordController.text.length < 6) {
                         _showErrorDialog(
-                          "Please enter a valid name, email, and password (at least 6 characters).",
+                          "Please enter valid details (Password min 6 chars)",
                         );
                         return;
                       }
-
                       setState(() => _isLoading = true);
-                      try {
-                        var user = await _authService.signUp(
-                          _nameController.text.trim(),
-                          _emailController.text.trim(),
-                          _passwordController.text.trim(),
-                        );
 
-                        if (user != null) {
-                          Navigator.pushReplacementNamed(context, '/');
-                        } else {
-                          _showErrorDialog(
-                            "This email is already in use or the server is busy.",
-                          );
-                        }
-                      } catch (e) {
-                        _showErrorDialog(e.toString());
-                      } finally {
-                        if (mounted) setState(() => _isLoading = false);
+                      final result = await _authService.signUp(
+                        _nameController.text.trim(),
+                        _emailController.text.trim(),
+                        _passwordController.text.trim(),
+                      );
+
+                      setState(() => _isLoading = false);
+
+                      if (result is User) {
+                        Navigator.pushReplacementNamed(context, '/');
+                      } else if (result is String) {
+                        // ফায়ারবেস থেকে আসা সুনির্দিষ্ট এরর (যেমন: Email already in use) মোডালে দেখাবে
+                        _showErrorDialog(result);
                       }
                     },
                     child: const Text(

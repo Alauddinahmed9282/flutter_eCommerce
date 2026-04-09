@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 
@@ -95,21 +96,30 @@ class _LoginScreenState extends State<LoginScreen> {
                       }
 
                       setState(() => _isLoading = true);
+
                       try {
-                        var user = await _authService.login(
+                        // AuthService কল করা
+                        final result = await _authService.login(
                           _emailController.text.trim(),
                           _passwordController.text.trim(),
                         );
 
-                        if (user != null) {
-                          Navigator.pushReplacementNamed(context, '/');
-                        } else {
-                          _showErrorDialog(
-                            "Invalid email or password. Please try again.",
-                          );
+                        print(
+                          "Login Result: $result",
+                        ); // ডিবাগিং এর জন্য রেজাল্ট প্রিন্ট করা হচ্ছে
+
+                        // চেক করা হচ্ছে রেজাল্টটি কি একজন User নাকি Error String
+                        if (result is User) {
+                          if (mounted) {
+                            Navigator.pushReplacementNamed(context, '/');
+                          }
+                          // ignore: dead_code
+                        } else if (result is String) {
+                          // যদি String হয়, তারমানে এটি একটি ফায়ারবেস এরর মেসেজ
+                          _showErrorDialog(result);
                         }
                       } catch (e) {
-                        _showErrorDialog(e.toString());
+                        _showErrorDialog("An unexpected error occurred.");
                       } finally {
                         if (mounted) setState(() => _isLoading = false);
                       }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mastery/screen/cart_screen.dart';
+import 'package:flutter_mastery/screen/profile_screen.dart';
 import '../screen/home_screen.dart';
 
 class MainWrapper extends StatefulWidget {
@@ -17,7 +18,7 @@ class _MainWrapperState extends State<MainWrapper> {
     const Center(child: Text("Favorites Screen")),
     HomeScreen(),
     const CartScreen(),
-    const Center(child: Text("Profile Screen")),
+    const ProfileScreen(),
   ];
 
   void _onItemTapped(int index) {

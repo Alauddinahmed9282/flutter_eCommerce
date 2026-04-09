@@ -137,4 +137,10 @@ class DatabaseHelper {
     final result = await db.query('users', limit: 1);
     return result.isNotEmpty ? result.first : null;
   }
+
+  // database_helper.dart এ যোগ করুন
+  Future<List<Map<String, dynamic>>> getAllUsers() async {
+    final db = await instance.database;
+    return await db.query('users');
+  }
 }

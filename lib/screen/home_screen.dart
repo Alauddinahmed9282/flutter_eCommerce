@@ -36,6 +36,19 @@ class _HomeScreenState extends State<HomeScreen> {
     "Fish",
     "Small Pets",
   ];
+  void checkSavedData() async {
+    final users = await DatabaseHelper.instance.getAllUsers();
+    if (users.isNotEmpty) {
+      print("--- Saved Users in SQLite ---");
+      for (var user in users) {
+        print(
+          "ID: ${user['id']}, Name: ${user['name']}, Email: ${user['email']}",
+        );
+      }
+    } else {
+      print("No user data found in SQLite.");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

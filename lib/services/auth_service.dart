@@ -29,17 +29,24 @@ class AuthService {
   }
 
   // Login Function
+  // login function inside AuthService
   Future<Object?> login(String email, String password) async {
     try {
       UserCredential result = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
+      User? user = result.user;
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('isLoggedIn', true);
+      if (user != null) {
+        String name = user.displayName ?? email.split('@')[0];
+        await DatabaseHelper.instance.saveUserToLocal(name, email);
 
-      return result.user;
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('isLoggedIn', true);
+      }
+
+      return user;
     } on FirebaseAuthException catch (e) {
       return e.message ?? "An unknown error occurred.";
     } catch (e) {
