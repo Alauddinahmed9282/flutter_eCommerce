@@ -13,7 +13,7 @@ class CartScreen extends StatefulWidget {
 class _CartScreenState extends State<CartScreen> {
   List<Map<String, dynamic>> _cartItems = [];
   double _totalPrice = 0;
-  bool _isProcessing = false; // পেমেন্ট প্রসেসিং ট্র্যাকার
+  bool _isProcessing = false;
 
   @override
   void initState() {
@@ -81,11 +81,9 @@ class _CartScreenState extends State<CartScreen> {
                                   height: 80,
                                   fit: BoxFit.contain,
                                   placeholder: (context, url) =>
-                                      const CircularProgressIndicator(), // লোড হওয়ার সময় দেখাবে
+                                      const CircularProgressIndicator(),
                                   errorWidget: (context, url, error) =>
-                                      const Icon(
-                                        Icons.broken_image,
-                                      ), // অফলাইনেও যদি ক্যাশে না থাকে তবে দেখাবে
+                                      const Icon(Icons.broken_image),
                                 ),
                               ),
                               const SizedBox(width: 12),

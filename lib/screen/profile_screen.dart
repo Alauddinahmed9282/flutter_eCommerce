@@ -21,7 +21,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _loadData() async {
-    // getLocalUser মেথডটি DatabaseHelper এ থাকতে হবে যা প্রথম ইউজারকে রিটার্ন করে
     final userData = await DatabaseHelper.instance.getLocalUser();
     if (userData != null) {
       print("User Name: ${userData['name']}");
@@ -31,9 +30,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _loadUserProfile() async {
     final data = await DatabaseHelper.instance.getLocalUser();
-    print(
-      "Loaded User Data: $data",
-    ); // ডিবাগিং এর জন্য ইউজার ডেটা প্রিন্ট করা হচ্ছে
+    print("Loaded User Data: $data");
     setState(() {
       _userData = data;
     });
@@ -111,7 +108,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _buildProfileOption(
                     Icons.shopping_bag_outlined,
                     "My Orders",
-                    () {},
+                    () {
+                      Navigator.pushNamed(context, '/cart');
+                    },
                   ),
                   _buildProfileOption(Icons.favorite_border, "Wishlist", () {}),
                   _buildProfileOption(
@@ -193,7 +192,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // লগআউট কনফার্মেশন ডায়ালগ
   void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,

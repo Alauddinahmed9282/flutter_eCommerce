@@ -2,6 +2,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_mastery/screen/cart_screen.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'widgets/main_wrapper.dart';
@@ -39,6 +40,7 @@ class MyApp extends StatelessWidget {
         '/': (context) => const MainWrapper(),
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => const SignupScreen(),
+        '/cart': (context) => const CartScreen(),
       },
       debugShowCheckedModeBanner: false,
       title: 'Pet Food Store',
