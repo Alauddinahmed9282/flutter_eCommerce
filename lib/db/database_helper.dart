@@ -42,6 +42,14 @@ class DatabaseHelper {
         quantity INTEGER
       )
     ''');
+
+    await db.execute('''
+      CREATE TABLE users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        email TEXT
+      )
+    ''');
   }
 
   Future<void> insertProducts(List<Product> products) async {
@@ -117,5 +125,16 @@ class DatabaseHelper {
   Future<void> clearCart() async {
     final db = await instance.database;
     await db.delete('cart');
+  }
+
+  Future<void> saveUserToLocal(String name, String email) async {
+    final db = await instance.database;
+    await db.insert('users', {'name': name, 'email': email});
+  }
+
+  Future<Map<String, dynamic>?> getLocalUser() async {
+    final db = await instance.database;
+    final result = await db.query('users', limit: 1);
+    return result.isNotEmpty ? result.first : null;
   }
 }
