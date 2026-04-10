@@ -3,11 +3,6 @@ PODS:
     - AgoraIrisRTC_iOS (= 4.3.2-build.1)
     - AgoraRtcEngine_iOS (= 4.3.2)
     - Flutter
-  - agora_rtm (1.6.3):
-    - AgoraRtm_iOS (= 1.5.1)
-    - Flutter
-  - agora_uikit (0.0.1):
-    - Flutter
   - AgoraIrisRTC_iOS (4.3.2-build.1)
   - AgoraRtcEngine_iOS (4.3.2):
     - AgoraRtcEngine_iOS/AIAEC (= 4.3.2)
@@ -44,7 +39,6 @@ PODS:
   - AgoraRtcEngine_iOS/VideoCodecEnc (4.3.2)
   - AgoraRtcEngine_iOS/VirtualBackground (4.3.2)
   - AgoraRtcEngine_iOS/VQA (4.3.2)
-  - AgoraRtm_iOS (1.5.1)
   - Firebase/Auth (11.15.0):
     - Firebase/CoreOnly
     - FirebaseAuth (~> 11.15.0)
@@ -173,8 +167,6 @@ PODS:
 
 DEPENDENCIES:
   - agora_rtc_engine (from `.symlinks/plugins/agora_rtc_engine/ios`)
-  - agora_rtm (from `.symlinks/plugins/agora_rtm/ios`)
-  - agora_uikit (from `.symlinks/plugins/agora_uikit/ios`)
   - firebase_auth (from `.symlinks/plugins/firebase_auth/ios`)
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - Flutter (from `Flutter`)
@@ -188,7 +180,6 @@ SPEC REPOS:
   trunk:
     - AgoraIrisRTC_iOS
     - AgoraRtcEngine_iOS
-    - AgoraRtm_iOS
     - Firebase
     - FirebaseAppCheckInterop
     - FirebaseAuth
@@ -212,10 +203,6 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   agora_rtc_engine:
     :path: ".symlinks/plugins/agora_rtc_engine/ios"
-  agora_rtm:
-    :path: ".symlinks/plugins/agora_rtm/ios"
-  agora_uikit:
-    :path: ".symlinks/plugins/agora_uikit/ios"
   firebase_auth:
     :path: ".symlinks/plugins/firebase_auth/ios"
   firebase_core:
@@ -235,11 +222,8 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   agora_rtc_engine: d9fb22143ddb09a917b610b7e41f96166a6e0ea2
-  agora_rtm: dde299275c7031ce0abc16295f628374cfa954f7
-  agora_uikit: 118d15f7a97e84a4dcae0309ab2128044f5ccd52
   AgoraIrisRTC_iOS: 3cb15344a503a1a35ab6d60481732a8beeda98fe
   AgoraRtcEngine_iOS: eaa97751fcfe1b50d9b067e0df92752a6a5f899f
-  AgoraRtm_iOS: 595a9fa33a409831e6183396ea8f8bc563918403
   Firebase: d99ac19b909cd2c548339c2241ecd0d1599ab02e
   firebase_auth: 50af8366c87bb88c80ebeae62eb60189c7246b9b
   firebase_core: 995454a784ff288be5689b796deb9e9fa3601818

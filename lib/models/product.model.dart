@@ -19,10 +19,8 @@ class Product {
     return Product(
       id: json['id'],
       title: json['title'],
-      // price অনেক সময় int বা double হতে পারে, তাই .toDouble() নিরাপদ
       price: (json['price'] as num).toDouble(),
       description: json['description'],
-      // Fakestore এর 'image' অথবা Platzi এর 'images[0]' চেক করবে
       image: json['image'] ?? (json['images'] != null ? json['images'][0] : ""),
       category: json['category'] is Map
           ? json['category']['name']

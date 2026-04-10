@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "431693115001",
+    "project_id": "flutter-mastery-f5573",
+    "storage_bucket": "flutter-mastery-f5573.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:431693115001:android:b5a516b17f56def2a32ea8",
+        "android_client_info": {
+          "package_name": "com.example.flutter_mastery"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "431693115001-dvhms0q2hjtohlliu18vjl7be5p4vbju.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDUBnXI5ajnZbzDGAgqTY3Vs5OP93v1iVE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "431693115001-dvhms0q2hjtohlliu18vjl7be5p4vbju.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "431693115001-4ksnfjqrcrt8f6nus7l88o8umhv277ri.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.flutterMastery"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
