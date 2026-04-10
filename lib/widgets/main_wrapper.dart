@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mastery/screen/cart_screen.dart';
+import 'package:flutter_mastery/screen/chat_screen.dart';
 import 'package:flutter_mastery/screen/profile_screen.dart';
 import '../screen/home_screen.dart';
 
@@ -14,7 +15,7 @@ class _MainWrapperState extends State<MainWrapper> {
   int _selectedIndex = 2; // Default Selected: Home (Pets Icon)
 
   final List<Widget> _screens = [
-    const Center(child: Text("Search Screen")),
+    const ChatScreen(),
     const Center(child: Text("Favorites Screen")),
     HomeScreen(),
     const CartScreen(),
