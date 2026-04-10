@@ -7,7 +7,10 @@ class SocketService {
 
   void connect() {
     socket = IO.io(
-      Platform.isAndroid ? 'http://10.0.2.2:3000' : 'http://localhost:3000',
+      Platform.isAndroid
+          ? 'http://192.168.0.150:3000'
+          : 'http://192.168.0.150:3000',
+      // Platform.isAndroid ? 'http://10.0.2.2:3000' : 'http://localhost:3000',
       <String, dynamic>{
         'transports': ['websocket'],
         'autoConnect': false,

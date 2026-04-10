@@ -30,7 +30,7 @@ class _CallScreenState extends State<CallScreen> {
     _engine = createAgoraRtcEngine();
     await _engine.initialize(
       const RtcEngineContext(
-        appId: "YOUR_AGORA_APP_ID", // আপনার App ID দিন
+        appId: "fb92cdc3a2bc47719327cd5d792121d8", // আপনার App ID দিন
         channelProfile: ChannelProfileType.channelProfileCommunication,
       ),
     );
@@ -76,7 +76,8 @@ class _CallScreenState extends State<CallScreen> {
 
     // ৫. চ্যানেলে জয়েন করা
     await _engine.joinChannel(
-      token: "YOUR_TEMP_TOKEN", // আপনার টেম্পোরারি টোকেন
+      token:
+          "007eJxTYLCWNjkR1Zale3lO6S7pdd//XOLaMvndTT9FleTiaYvfnMhWYEhLsjRKTkk2TjRKSjYxNze0NDYyT04xTTG3NDI0MkyxCJK9mdkQyMjQGLKGgREKQXwWhpLU4hIGBgCdLCBv", // আপনার টেম্পোরারি টোকেন
       channelId: widget.channelName,
       uid: 0, // ০ দিলে আগোরা অটোমেটিক একটি আইডি দেবে
       options: const ChannelMediaOptions(),
